@@ -89,31 +89,29 @@ def depthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
 
     from util import Stack
-    stack = Stack()
-    #visited danh dau nhung node da di qua
-    visited = {}
-    #start_node vi tri hien tai cua Pac Man
-    start_node = problem.getStartState()
+    stack = util.Stack()
+    visited = []
+    start_node = (problem.getStartState(), [])
 
     if problem.isGoalState(start_node):
         return []
-    stack.push(start_node, [])
+    stack.push(start_node)
 
     while(stack.isEmpty() != True):
         top = stack.pop()
         location = top[0]
         path = top[1]
-        visited.append(location)
 
-        if problem.isGoalState(top):
-            return path
-
-        successors = problem.getSuccessors(location)
-        if successors:
-            for element in successors:
-                if element[0] not in visited:
-                    new_path = path + element[1]
-                    stack.push((element[0], new_path))
+        if location not in visited:
+            visited.append(location)
+            if problem.isGoalState(location):
+                return path
+            successors = problem.getSuccessors(location)
+            if successors:
+                for element in successors:
+                    if element[0] not in visited:
+                        new_path = path + [element[1]]
+                        stack.push((element[0], new_path))
     return []
     #util.raiseNotDefined()
 
