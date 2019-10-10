@@ -1,1 +1,1 @@
-# AI_berkerly_pacman_projects
+# pacman_projects
