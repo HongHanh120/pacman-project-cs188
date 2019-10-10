@@ -75,30 +75,24 @@ class ReflexAgent(Agent):
 
         "*** YOUR CODE HERE ***"
         """Tinh khoang cach tu vi tri hien tai toi thuc an o xa nhat"""
-        foodsPos = newFood.asList()
-        """Sap xep thu tu vi tri thuc an theo khoang cach tu vi tri hien tai den thuc an"""
-        foodsPos = sorted(foodsPos, key=lambda pos: manhattanDistance(newPos, pos))
-        closestFoodDist = -1
-        if len(foodsPos) > 0:
-            closestFoodDist = manhattanDistance(foodsPos[0], newPos)
+        foodsDistance = newFood.asList()
+        foodsDistance = sorted(foodsDistance, key = lambda position: manhattanDistance(newPos, position))
+        closestFoodDistance = -1
+        if len(foodsDistance) > 0:
+                closestFoodDistance = manhattanDistance(newPos, foodsDistance[0])
 
-        proximity_to_ghosts = 0
-        activeGhostsPos = []
-        for ghost in newGhostStates:
-            if ghost.scaredTimer == 0:
-                activeGhostsPos.append(ghost.getPosition())
-        activeGhostsPos = sorted(activeGhostsPos, key=lambda pos: manhattanDistance(pos, newPos))
-        closestActiveGhostDist = 1
-        if len(activeGhostsPos) > 0:
-            closestActiveGhostDist += manhattanDistance(activeGhostsPos[0], newPos)
-            if closestActiveGhostDist <= 1:
-                proximity_to_ghosts += 1
 
-        distance_tuple = (closestFoodDist, closestActiveGhostDist,successorGameState.getScore())
-        print(distance_tuple)
+        closestGhostDistance = 1
+        proximityToGhost = 0
+        for ghostState in successorGameState.getGhostPositions():
+            distance = manhattanDistance(newPos, ghostState)
+            closestGhostDistance += distance
+            if distance <= 1:
+                proximityToGhost += 1
 
-        return successorGameState.getScore() + (1 / float(closestFoodDist)) - (1 / float(closestActiveGhostDist)) - proximity_to_ghosts
-
+        tuple_distance = (closestFoodDistance, closestGhostDistance, proximityToGhost)
+        print(tuple_distance)
+        return successorGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(closestGhostDistance)) - proximityToGhost
 def scoreEvaluationFunction(currentGameState):
     """
       This default evaluation function just returns the score of the state.
