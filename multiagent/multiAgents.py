@@ -90,8 +90,8 @@ class ReflexAgent(Agent):
             if distance <= 1:
                 proximityToGhost += 1
         """In ra cac khoang cach """
-        tuple_distance = (closestFoodDistance, closestGhostDistance, proximityToGhost)
-        print(tuple_distance)
+        # tuple_distance = (closestFoodDistance, closestGhostDistance, proximityToGhost)
+        # print(tuple_distance)
         return successorGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(closestGhostDistance)) - proximityToGhost
 def scoreEvaluationFunction(currentGameState):
     """
@@ -146,44 +146,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        quantityGhosts = gameState.getNumAgents() - 1
-        return self.maximize(gameState, 1, quantityGhosts)
 
-    def maximize(self, gameState, depth, quantityGhosts):
-        if gameState.isWin() or gameState.isLose():
-            return self.evaluationFunction(gameState)
-
-        maxValue = float("-inf")
-        bestAction = Directions.STOP
-        for action in gameState.getLegalActions(0):
-            successor = gameState.generateSuccessor(0, action)
-            tempValue = self.minimize(successor, depth, 1, quantityGhosts)
-            if tempValue > maxValue:
-                maxValue = tempValue
-                bestAction = action
-        if depth > 1:
-            return maxValue
-        return bestAction
-
-    def minimize(self, gameState, depth, agentIndex, quantityGhosts):
-        if gameState.isWin() or gameState.isLose():
-            return self.evaluationFunction(gameState)
-
-        minValue = float("inf")
-        legalAcions = gameState.getLegalActions(agentIndex)
-        successors = [gameState.generateSuccessor(agentIndex, action) for action in legalAcions]
-        if agentIndex == quantityGhosts:
-            if depth < self.depth:
-                for successor in successors:
-                    minValue = min(minValue, self.maximize(successor, depth + 1, quantityGhosts))
-            else:
-                for successor in successors:
-                    minValue = min(minValue, self.evaluationFunction(successor))
-        else:
-            for successor in successors:
-                minValue = min(minValue, self.minimize(successor, depth, agentIndex + 1, quantityGhosts))
-
-        return minValue
 
         #util.raiseNotDefined()
 
