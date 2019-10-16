@@ -146,9 +146,46 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
+        numGhosts = gameState.getNumAgents() - 1
+        return self.maximize(gameState, 1, numGhosts)
+
+    def maximize(self, gameState, depth, numGhosts):
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        maxValue = float('-inf')
+        bestAction = Directions.STOP
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            tempValue = self.minimize(successor, depth, 1, numGhosts)
+            if maxValue < tempValue:
+                maxValue = tempValue
+                bestAction = action
+        if depth > 1:
+            return maxValue
+        return bestAction
+
+    def minimize(self, gameState, depth, agentIndex, numGhosts):
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        minValue = float('inf')
+        legalActions = gameState.getLegalActions(agentIndex)
+        successors = [gameState.generateSuccessor(agentIndex, action) for action in legalActions]
+        if agentIndex == numGhosts:
+            if depth < self.depth:
+                for successor in successors:
+                    minValue = min(minValue, self.maximize(successor, depth + 1, numGhosts))
+            else:
+                for successor in successors:
+                    minValue = min(minValue, self.evaluationFunction(successor))
+        else:
+            for successor in successors:
+                minValue = min(minValue, self.minimize(successor, depth, agentIndex + 1, numGhosts))
+        return minValue
 
 
-        #util.raiseNotDefined()
+#util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -160,7 +197,58 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numGhosts = gameState.getNumAgents() - 1
+        return self.maximize(gameState, 1, numGhosts, float('-inf'), float('inf'))
+    #util.raiseNotDefined()
+
+    def maximize(self, gameState, depth, numGhosts, alpha, beta):
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        maxValue = float('-inf')
+        bestAction = Directions.STOP
+
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            tempValue = self.minimize(successor, depth, 1, numGhosts, alpha, beta)
+            if maxValue < tempValue:
+                maxValue = tempValue
+                bestAction = action
+
+            # Loai bo nhanh
+            if maxValue > beta:
+                return maxValue
+            alpha = max(maxValue, alpha)
+
+        if depth > 1:
+            return maxValue
+        return bestAction
+
+
+    def minimize(self, gameState, depth, agentIndex, numGhosts, alpha, beta):
+        if gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        minValue = float('inf')
+
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            if agentIndex == numGhosts:
+                if depth < self.depth:
+                    tempValue = self.maximize(successor, depth + 1, numGhosts, alpha, beta)
+                else:
+                    tempValue = self.evaluationFunction(successor)
+            else:
+                tempValue = self.minimize(successor, depth, agentIndex + 1, numGhosts, alpha, beta)
+
+            if tempValue < minValue:
+                minValue = tempValue
+
+            if minValue < alpha:
+                return minValue
+            beta = min(minValue, beta)
+        return minValue
+
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
