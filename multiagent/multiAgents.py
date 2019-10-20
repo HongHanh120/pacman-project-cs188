@@ -306,15 +306,15 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
+    # Tinh khoang cach den cac thuc an
     pacmanPosition = currentGameState.getPacmanPosition()
     food = currentGameState.getFood()
     foodsPosition = food.asList()
     foodsPosition = sorted(foodsPosition, key=lambda position: manhattanDistance(pacmanPosition, position))
-
     closestFoodDistance = -1
     if len(foodsPosition) > 0:
         closestFoodDistance = manhattanDistance(foodsPosition[0], pacmanPosition)
-
+    # Tinh khoang cach den con ma
     distanceToGhost = 1
     proximityToGhost = 0
     for ghostState in currentGameState.getGhostStates():
@@ -322,12 +322,12 @@ def betterEvaluationFunction(currentGameState):
         distanceToGhost += distance
         if distance <= 1:
             proximityToGhost += 1
-
+    # An nhung cai capsule de vo hieu hoa con ma
     newCapsules = currentGameState.getCapsules()
     numberOfCapsules = len(newCapsules)
 
-    tuple_distance = (closestFoodDistance, distanceToGhost, proximityToGhost, numberOfCapsules)
-    print(tuple_distance)
+    # tuple_distance = (closestFoodDistance, distanceToGhost, proximityToGhost, numberOfCapsules)
+    # print(tuple_distance)
     return currentGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(distanceToGhost)) - proximityToGhost - numberOfCapsules
 
 # Abbreviation
