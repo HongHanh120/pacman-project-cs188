@@ -307,7 +307,6 @@ def betterEvaluationFunction(currentGameState):
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
     pacmanPosition = currentGameState.getPacmanPosition()
-
     food = currentGameState.getFood()
     foodsPosition = food.asList()
     foodsPosition = sorted(foodsPosition, key=lambda position: manhattanDistance(pacmanPosition, position))
@@ -318,8 +317,8 @@ def betterEvaluationFunction(currentGameState):
 
     distanceToGhost = 1
     proximityToGhost = 0
-    for ghostState in currentGameState.getGhostPosition():
-        distance = manhattanDistance(pacmanPosition, ghostState)
+    for ghostState in currentGameState.getGhostStates():
+        distance = manhattanDistance(pacmanPosition, ghostState.getPosition())
         distanceToGhost += distance
         if distance <= 1:
             proximityToGhost += 1
@@ -330,6 +329,7 @@ def betterEvaluationFunction(currentGameState):
     tuple_distance = (closestFoodDistance, distanceToGhost, proximityToGhost, numberOfCapsules)
     print(tuple_distance)
     return currentGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(distanceToGhost)) - proximityToGhost - numberOfCapsules
+
 # Abbreviation
 better = betterEvaluationFunction
 
