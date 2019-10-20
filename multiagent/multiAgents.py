@@ -74,14 +74,15 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        """Tinh khoang cach tu vi tri hien tai toi thuc an o xa nhat"""
+        # Tinh khoang cach tu vi tri hien tai toi thuc an o xa nhat
         foodsDistance = newFood.asList()
+        # Sap xep lai mang thuc an theo thu tu khoang cach
         foodsDistance = sorted(foodsDistance, key = lambda position: manhattanDistance(newPos, position))
         closestFoodDistance = -1
         if len(foodsDistance) > 0:
                 closestFoodDistance = manhattanDistance(newPos, foodsDistance[0])
 
-        """Tinh khoang cach tu vi tri hien tai toi con quai va kiem tra nhung vi tri xung quanh con quai"""
+        # Tinh khoang cach tu vi tri hien tai toi con ma va kiem tra nhung vi tri xung quanh con ma
         closestGhostDistance = 1
         proximityToGhost = 0
         for ghostState in successorGameState.getGhostPositions():
@@ -233,7 +234,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     minValue = min(minValue, self.evaluationFunction(successor))
             else:
                 minValue = min(minValue, self.minimize(successor, depth, agentIndex + 1, numGhosts, alpha, beta))
-
+            # Loai bo nhanh
             if minValue < alpha:
                 return minValue
             beta = min(beta, minValue)
@@ -304,8 +305,31 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    #util.raiseNotDefined()
+    pacmanPosition = currentGameState.getPacmanPosition()
 
+    food = currentGameState.getFood()
+    foodsPosition = food.asList()
+    foodsPosition = sorted(foodsPosition, key=lambda position: manhattanDistance(pacmanPosition, position))
+
+    closestFoodDistance = -1
+    if len(foodsPosition) > 0:
+        closestFoodDistance = manhattanDistance(foodsPosition[0], pacmanPosition)
+
+    distanceToGhost = 1
+    proximityToGhost = 0
+    for ghostState in currentGameState.getGhostPosition():
+        distance = manhattanDistance(pacmanPosition, ghostState)
+        distanceToGhost += distance
+        if distance <= 1:
+            proximityToGhost += 1
+
+    newCapsules = currentGameState.getCapsules()
+    numberOfCapsules = len(newCapsules)
+
+    tuple_distance = (closestFoodDistance, distanceToGhost, proximityToGhost, numberOfCapsules)
+    print(tuple_distance)
+    return currentGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(distanceToGhost)) - proximityToGhost - numberOfCapsules
 # Abbreviation
 better = betterEvaluationFunction
 
