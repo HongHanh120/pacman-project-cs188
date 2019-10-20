@@ -157,10 +157,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
         bestAction = Directions.STOP
         for action in gameState.getLegalActions(0):
             successor = gameState.generateSuccessor(0, action)
-            tempValue = self.minimize(successor, depth, 1, numGhosts)
-            if maxValue < tempValue:
+            tempValue = self.minimize(successor, depth, 1,  numGhosts)
+            if tempValue > maxValue:
                 maxValue = tempValue
                 bestAction = action
+
         if depth > 1:
             return maxValue
         return bestAction
@@ -170,21 +171,17 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(gameState)
 
         minValue = float('inf')
-        legalActions = gameState.getLegalActions(agentIndex)
-        successors = [gameState.generateSuccessor(agentIndex, action) for action in legalActions]
-        if agentIndex == numGhosts:
-            if depth < self.depth:
-                for successor in successors:
+        for action in gameState.getLegalActions(agentIndex):
+            successor = gameState.generateSuccessor(agentIndex, action)
+            if agentIndex == numGhosts:
+                if depth < self.depth:
                     minValue = min(minValue, self.maximize(successor, depth + 1, numGhosts))
-            else:
-                for successor in successors:
+                else:
                     minValue = min(minValue, self.evaluationFunction(successor))
-        else:
-            for successor in successors:
+            else:
                 minValue = min(minValue, self.minimize(successor, depth, agentIndex + 1, numGhosts))
+
         return minValue
-
-
 #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -199,7 +196,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         numGhosts = gameState.getNumAgents() - 1
         return self.maximize(gameState, 1, numGhosts, float('-inf'), float('inf'))
-    #util.raiseNotDefined()
 
     def maximize(self, gameState, depth, numGhosts, alpha, beta):
         if gameState.isWin() or gameState.isLose():
@@ -207,14 +203,12 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         maxValue = float('-inf')
         bestAction = Directions.STOP
-
         for action in gameState.getLegalActions(0):
             successor = gameState.generateSuccessor(0, action)
-            tempValue = self.minimize(successor, depth, 1, numGhosts, alpha, beta)
+            tempValue = self.minimize(successor, depth, 1,  numGhosts, alpha, beta)
             if maxValue < tempValue:
                 maxValue = tempValue
                 bestAction = action
-
             # Loai bo nhanh
             if maxValue > beta:
                 return maxValue
@@ -223,7 +217,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if depth > 1:
             return maxValue
         return bestAction
-
 
     def minimize(self, gameState, depth, agentIndex, numGhosts, alpha, beta):
         if gameState.isWin() or gameState.isLose():
@@ -235,18 +228,15 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             successor = gameState.generateSuccessor(agentIndex, action)
             if agentIndex == numGhosts:
                 if depth < self.depth:
-                    tempValue = self.maximize(successor, depth + 1, numGhosts, alpha, beta)
+                    minValue = min(minValue, self.maximize(successor, depth + 1, numGhosts, alpha, beta))
                 else:
-                    tempValue = self.evaluationFunction(successor)
+                    minValue = min(minValue, self.evaluationFunction(successor))
             else:
-                tempValue = self.minimize(successor, depth, agentIndex + 1, numGhosts, alpha, beta)
-
-            if tempValue < minValue:
-                minValue = tempValue
+                minValue = min(minValue, self.minimize(successor, depth, agentIndex + 1, numGhosts, alpha, beta))
 
             if minValue < alpha:
                 return minValue
-            beta = min(minValue, beta)
+            beta = min(beta, minValue)
         return minValue
 
 
