@@ -74,7 +74,7 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        # Tinh khoang cach tu vi tri hien tai toi thuc an o xa nhat
+        # Tinh khoang cach tu vi tri hien tai toi thuc an
         foodsDistance = newFood.asList()
         # Sap xep lai mang thuc an theo thu tu khoang cach
         foodsDistance = sorted(foodsDistance, key = lambda position: manhattanDistance(newPos, position))
@@ -91,8 +91,8 @@ class ReflexAgent(Agent):
             if distance <= 1:
                 proximityToGhost += 1
         """In ra cac khoang cach """
-        # tuple_distance = (closestFoodDistance, closestGhostDistance, proximityToGhost)
-        # print(tuple_distance)
+        #tuple_distance = (closestFoodDistance, closestGhostDistance, proximityToGhost)
+        #print(tuple_distance)
         return successorGameState.getScore() + (1 / float(closestFoodDistance)) - (1 / float(closestGhostDistance)) - proximityToGhost
 def scoreEvaluationFunction(currentGameState):
     """
@@ -308,20 +308,23 @@ def betterEvaluationFunction(currentGameState):
     #util.raiseNotDefined()
     # Tinh khoang cach den cac thuc an
     pacmanPosition = currentGameState.getPacmanPosition()
-    food = currentGameState.getFood()
-    foodsPosition = food.asList()
-    foodsPosition = sorted(foodsPosition, key=lambda position: manhattanDistance(pacmanPosition, position))
+    foods = currentGameState.getFood()
     closestFoodDistance = -1
+    foodsPosition = foods.asList()
+    foodsPosition = sorted(foodsPosition, key = lambda position: manhattanDistance(position, pacmanPosition))
     if len(foodsPosition) > 0:
         closestFoodDistance = manhattanDistance(foodsPosition[0], pacmanPosition)
+
     # Tinh khoang cach den con ma
     distanceToGhost = 1
     proximityToGhost = 0
+
     for ghostState in currentGameState.getGhostStates():
         distance = manhattanDistance(pacmanPosition, ghostState.getPosition())
         distanceToGhost += distance
         if distance <= 1:
             proximityToGhost += 1
+
     # An nhung cai capsule de vo hieu hoa con ma
     newCapsules = currentGameState.getCapsules()
     numberOfCapsules = len(newCapsules)
