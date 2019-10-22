@@ -288,7 +288,8 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        self.startingGameState = startingGameState
+        self.gameState = startingGameState
+        self.heuristicInfo = dict()
 
     def getStartState(self):
         """
@@ -298,7 +299,8 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         # Cac trang thai cornersProblem duoc khai bao nhu la tuple cua vi tri pacman cac tap hop corners da tham
         # Ban dau, vi tri pacman la self.startingPosition va corners da tham = rong
-        return self.startingPosition, ()
+        state = (self.startingPosition, (0, 1, 2, 3))
+        return state
         #  util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -310,7 +312,7 @@ class CornersProblem(search.SearchProblem):
         # Kiem tra neu so corner da tham bang voi so corner trong ban do
         # Neu dung, muc tieu da dat dc, tra ve true
         if len(self.corners) != len(state[1]):
-            return  False
+            return False
         return True
         #util.raiseNotDefined()
 
@@ -338,19 +340,19 @@ class CornersProblem(search.SearchProblem):
         # Tinh so diem tiep theo o vi tri hien tai
         # Neu vi tri tiep theo la corner va chua duoc tham, them vao mang corners da duoc tham
         # state[0] = vi tri hien tai, state[1] = nhung vi tri corner da duoc tham
-        x, y = state[0]
-        visited = state[1]
-        cost = 1
-        dx, dy = Actions.directionToVector(action)
-        nextx, nexty = int(x + dx), int(y + dy)
-        #Vi tri next khong phai la tuong
-        if self.walls[nextx][nexty] != True:
-            nextState = (nextx, nexty)
-            if nextState in self.corners and nextState not in state[1]:
-                visited.append(nextState)
-            successors.append(((nextState, visited), action, cost))
+            x, y = state
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                nextState = (nextx, nexty)
+                cost = self.costFn(nextState)
+                successors.append((nextState, action, cost))
 
-        self._expanded += 1 # DO NOT CHANGE
+        self._expanded += 1  # DO NOT CHANGE
+        if state not in self._visited:
+            self._visited[state] = True
+            self._visitedlist.append(state)
+
         return successors
 
     def getCostOfActions(self, actions):
@@ -358,7 +360,8 @@ class CornersProblem(search.SearchProblem):
         Returns the cost of a particular sequence of actions.  If those actions
         include an illegal move, return 999999.  This is implemented for you.
         """
-        if actions == None: return 999999
+        if actions == None:
+            return 999999
         x,y= self.startingPosition
         for action in actions:
             dx, dy = Actions.directionToVector(action)
@@ -392,8 +395,8 @@ def cornersHeuristic(state, problem):
         for index, element in enumerate(state[1]):
             if element == 0:
                 distancesFromGoal.append(manhattanDistance(state[0], corners[index]))
-                heuristic  = max(distancesFromGoal)
-        return heuristic # Default to trivial solution
+                heuristic = max(distancesFromGoal)
+        return heuristic
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

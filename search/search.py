@@ -97,7 +97,7 @@ def depthFirstSearch(problem):
         return []
     stack.push(start_node)
 
-    while(stack.isEmpty() != True):
+    while not stack.isEmpty():
         top = stack.pop()
         location = top[0]
         path = top[1]
@@ -125,7 +125,7 @@ def breadthFirstSearch(problem):
     start_node = (problem.getStartState(),[])
     queue.push(start_node)
 
-    while (queue.isEmpty() != True):
+    while not queue.isEmpty():
         top = queue.pop()
         location = top[0]
         path = top[1]
@@ -154,7 +154,7 @@ def uniformCostSearch(problem):
 
     priority_queue.push((start_node, action, cost), cost)
 
-    while (priority_queue.isEmpty() != True):
+    while not priority_queue.isEmpty():
         top = priority_queue.pop()
         location = top[0]
         path = top[1]
@@ -180,15 +180,15 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    from util import PriorityQueue
-    priority_queue = PriorityQueue()
-    visited = []
+
+    priority_queue = util.PriorityQueue()
     start_node = problem.getStartState()
     cost = 0
     action = []
     priority_queue.push((start_node, action, cost), cost)
+    visited = set()
 
-    while (priority_queue.isEmpty() != True):
+    while not priority_queue.isEmpty():
         top = priority_queue.pop()
         location = top[0]
         path = top[1]
@@ -197,12 +197,15 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             return path
 
         if location not in visited:
-            visited.append(location)
-            for successor, act, co in problem.getSuccessors(location):
-                if successor not in visited:
-                    priority_queue.push((successor, path + [act], cost_node + co), cost_node + co)
-    #util.raiseNotDefined()
+            visited.add(location)
+            for successor in problem.getSuccessors(location):
+                if successor[0] not in visited:
+                    cost = cost_node + successor[2]
+                    totalCost = cost + heuristic(successor[0], problem)
+                    priority_queue.push((successor[0], path + [successor[1]], cost), totalCost)
 
+    return None
+#util.raiseNotDefined()
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
