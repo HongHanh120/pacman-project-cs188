@@ -288,8 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
-        self.gameState = startingGameState
-        self.heuristicInfo = dict()
+
 
     def getStartState(self):
         """
@@ -299,7 +298,7 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         # Cac trang thai cornersProblem duoc khai bao nhu la tuple cua vi tri pacman cac tap hop corners da tham
         # Ban dau, vi tri pacman la self.startingPosition va corners da tham = rong
-        state = (self.startingPosition, (0, 1, 2, 3))
+        state = (self.startingPosition, [])
         return state
         #  util.raiseNotDefined()
 
@@ -311,9 +310,13 @@ class CornersProblem(search.SearchProblem):
         # Muc tieu tham toan bo cac corner
         # Kiem tra neu so corner da tham bang voi so corner trong ban do
         # Neu dung, muc tieu da dat dc, tra ve true
-        if len(self.corners) != len(state[1]):
-            return False
-        return True
+        node = state[0]
+        visitedCorners = state[1]
+        if node in self.corners:
+            if not node in visitedCorners:
+                visitedCorners.append(node)
+            return len(visitedCorners) == 4
+        return False
         #util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -340,19 +343,21 @@ class CornersProblem(search.SearchProblem):
         # Tinh so diem tiep theo o vi tri hien tai
         # Neu vi tri tiep theo la corner va chua duoc tham, them vao mang corners da duoc tham
         # state[0] = vi tri hien tai, state[1] = nhung vi tri corner da duoc tham
-            x, y = state
+            x, y = state[0]
+            visitedCorners = state[1]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
-            if not self.walls[nextx][nexty]:
-                nextState = (nextx, nexty)
-                cost = self.costFn(nextState)
-                successors.append((nextState, action, cost))
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                successorVisitedCorners = list(visitedCorners)
+                next_node = (nextx, nexty)
+                if next_node in self.corners:
+                    if next_node not in successorVisitedCorners:
+                        successorVisitedCorners.append(next_node)
+                successor = ((next_node, successorVisitedCorners), action, 1)
+                successors.append(successor)
 
         self._expanded += 1  # DO NOT CHANGE
-        if state not in self._visited:
-            self._visited[state] = True
-            self._visitedlist.append(state)
-
         return successors
 
     def getCostOfActions(self, actions):
@@ -387,16 +392,23 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    from util import manhattanDistance
-    if problem.isGoalState(state[0]):
-        return 0
-    else:
-        distancesFromGoal = []
-        for index, element in enumerate(state[1]):
-            if element == 0:
-                distancesFromGoal.append(manhattanDistance(state[0], corners[index]))
-                heuristic = max(distancesFromGoal)
-        return heuristic
+
+    visitedCorners = state[1]
+    cornersLeftToVisit = []
+    for corner in corners:
+        if corner not in visitedCorners:
+            cornersLeftToVisit.append(corner)
+
+    totalCost = 0
+    coordinate = state[0]
+    curPoint = coordinate
+    while cornersLeftToVisit:
+        heuristic_cost, corner = \
+            min([(util.manhattanDistance(curPoint, corner), corner) for corner in cornersLeftToVisit])
+        cornersLeftToVisit.remove(corner)
+        curPoint = corner
+        totalCost += heuristic_cost
+    return totalCost
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -431,13 +443,13 @@ class FoodSearchProblem:
         successors = []
         self._expanded += 1 # DO NOT CHANGE
         for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            x,y = state[0]
+            x, y = state[0]
             dx, dy = Actions.directionToVector(direction)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
                 nextFood = state[1].copy()
                 nextFood[nextx][nexty] = False
-                successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
+                successors.append((((nextx, nexty), nextFood), direction, 1))
         return successors
 
     def getCostOfActions(self, actions):
@@ -508,7 +520,7 @@ class ClosestDotSearchAgent(SearchAgent):
     def registerInitialState(self, state):
         self.actions = []
         currentState = state
-        while(currentState.getFood().count() > 0):
+        while currentState.getFood().count() > 0:
             nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
             self.actions += nextPathSegment
             for action in nextPathSegment:
