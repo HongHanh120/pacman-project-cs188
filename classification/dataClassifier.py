@@ -75,13 +75,45 @@ def enhancedFeatureExtractorDigit(datum):
 
     ##
     """
-    features =  basicFeatureExtractorDigit(datum)
+    features = basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    for x in range(1, DIGIT_DATUM_WIDTH):
+        for y in range(1, DIGIT_DATUM_HEIGHT):
+            features[("horizontal", x, y)] = int(datum.getPixel(x, y) >
+                                                 datum.getPixel(x - 1, y))
+            features[("vertical", x, y)] = int(datum.getPixel(x, y) >
+                                               datum.getPixel(x, y - 1))
+    def getNeighbors(x, y):
+        neighbors = []
+        if x > 0:
+            neighbors.append((x - 1, y))
+        if x < DIGIT_DATUM_WIDTH - 1:
+            neighbors.append((x + 1, y))
+        if y > 0:
+            neighbors.append((x, y - 1))
+        if y < DIGIT_DATUM_HEIGHT - 1:
+            neighbors.append((x, y + 1))
+        return neighbors
 
+    region = set()
+    contiguous = 0
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            if (x, y) not in region and datum.getPixel(x, y) < 2:
+                contiguous += 1
+                stack = [(x, y)]
+                while stack:
+                    point = stack.pop()
+                    region.add(point)
+                    for neighbor in getNeighbors(*point):
+                        if neighbor not in region and datum.getPixel(*neighbor) < 2:
+                            stack.append(neighbor)
+
+    features["contiguous0"] = contiguous % 2
+    features["contiguous1"] = (contiguous >> 1) % 2
+    features["contiguous2"] = (contiguous >> 2) % 2
     return features
-
 
 
 def basicFeatureExtractorPacman(state):
@@ -124,8 +156,87 @@ def enhancedPacmanFeatures(state, action):
     """
     features = util.Counter()
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+    successor = state.generateSuccessor(0, action)
+    foodCount = successor.getNumFood()
+    curCapsules = successor.getCapsules()
+
+    pacmanPosition = successor.getPacmanPosition()
+    currentFood = state.getFood()
+    minDist = float("inf")
+
+    for x in range(currentFood.width):
+        for y in range(currentFood.height):
+            if currentFood[x][y]:
+                dist = util.manhattanDistance((x, y), pacmanPosition)
+                if dist < minDist:
+                    minDist = dist
+
+    ghostList = []
+    for g in successor.getGhostStates():
+        ghostList.append(util.manhattanDistance(g.getPosition(), pacmanPosition))
+
+    capDist = float("inf")
+    for capsuleState in curCapsules:
+        capDist = min(capDist, util.manhattanDistance(pacmanPosition, capsuleState))
+
+    features['food'] = minDist
+
+    if action == 'Stop':
+        features['Stop'] = 1
+    else:
+        features['Stop'] = 0
+
+    features['foodCount'] = foodCount
+    features['ghost'] = min(ghostList)
+
     return features
+
+    # successor = state.generateSuccessor(0, action)
+    # ghostPositions = successor.getGhostPositions()
+    # pacmanPosition = successor.getPacmanPosition()
+    # foods = successor.getFood()
+    # foodPositions = []
+    # for x in range(foods.width):
+    #     for y in range(foods.height):
+    #         if foods[x][y] == True:
+    #             foodPositions.append((x, y))
+    # ghostDistance = [util.manhattanDistance(g, pacmanPosition) for g in ghostPositions]
+    # foodDistance = [util.manhattanDistance(g, pacmanPosition) for g in foodPositions]
+    # foodDistance.sort()
+    # for i in range(len(foodDistance)):
+    #     features['foodDistance_{0}'.format(i)] = pow(1 + foodDistance[i], -1)
+    # features['minGhostDistance'] = pow(1 + min(ghostDistance), -1)
+    # return features
+
+    # # Ghost features
+    # for idx, ghost in enumerate(successor.getGhostPositions()):
+    #     featureName = 'ghost' + str(idx) + 'Dist'
+    #     features[featureName] = util.manhattanDistance(successor.getPacmanPosition(), ghost)
+    #
+    # # Food features
+    # features['remainingFood'] = successor.getFood().count()
+    # xrange = len(list(successor.getFood()))
+    # yrange = [len(list(successor.getFood())[i]) for i in range(xrange)][0]
+    # if features['remainingFood']:
+    #     features['closestFoodDist'] = min(
+    #         [util.manhattanDistance(successor.getPacmanPosition(), (x, y)) for x in range(xrange) for y in range(yrange)
+    #          if successor.hasFood(x, y)])
+    #
+    # # Capsule features
+    # features['remainingCapsule'] = len(successor.getCapsules())
+    # if features['remainingCapsule']:
+    #     features['closestCapsuleDist'] = min(
+    #         [util.manhattanDistance(successor.getPacmanPosition(), capsulePos) for capsulePos in
+    #          successor.getCapsules()])
+    #
+    # # Future action features
+    # totalFutureActions = len(successor.getLegalActions())
+    # for futureAction in successor.getLegalActions():
+    #     futureSuccessor = successor.generateSuccessor(0, futureAction)
+    #     features['totalFutureFoodCount'] += float(futureSuccessor.getFood().count()) / totalFutureActions
+    #     features['totalFutureCapsules'] += float(len(futureSuccessor.getCapsules())) / totalFutureActions
+    # return features
 
 
 def contestFeatureExtractorDigit(datum):
