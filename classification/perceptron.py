@@ -57,18 +57,16 @@ class PerceptronClassifier:
                 "*** YOUR CODE HERE ***"
                 # util.raiseNotDefined()
                 weight = trainingData[i]
-                yTrue = trainingLabels[i]
-
+                correctLabel = trainingLabels[i]
                 score = util.Counter()
 
                 for label in self.legalLabels:
                     score[label] = self.weights[label] * weight
 
-                yPred = score.argMax()
-
-                if yPred != yTrue:
-                    self.weights[yPred] -= weight
-                    self.weights[yTrue] += weight
+                guess = score.argMax()
+                if guess != correctLabel:
+                    self.weights[guess] -= weight
+                    self.weights[correctLabel] += weight
 
     def classify(self, data):
         """

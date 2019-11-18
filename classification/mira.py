@@ -61,7 +61,49 @@ class MiraClassifier:
         representing a vector of values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        maxAccuracy, maxC, maxWeights = max([self.getAccuracyCWeight(C, trainingData, trainingLabels, validationData, validationLabels) for C in Cgrid])
+        self.weights = maxWeights
+
+    def getAccuracyCWeight(self, C, trainingData, trainingLabels, validationData, validationLabels):
+        weights = self.weights.copy()
+        maxAccuracy, maxWeights = float('-inf'), None
+        for iteration in range(self.max_iterations):
+            print "Starting iteration ", iteration, "..."
+            for i in range(len(trainingData)):
+                datum = trainingData[i]
+                correctLabels = trainingLabels[i]
+                maxScore, guess = max([(datum * weights[label], label) for label in self.legalLabels])
+                if correctLabels != guess:
+                    tau = self.getTau(C, weights[guess], weights[correctLabels], datum)
+                    datumTau = datum.copy()
+                    for key in datum.keys():
+                        datumTau[key] = 1.0 * datumTau[key] * tau
+                    weights[correctLabels] += datumTau
+                    weights[guess] -= datumTau
+
+            accuracy = self.getAccuracy(weights, validationData, validationLabels)
+            if accuracy > maxAccuracy:
+                maxAccuracy = accuracy
+                maxWeights = weights.copy()
+            print "iteration", iteration, "C = ", C, "accuracy = ", accuracy
+        return maxAccuracy, C, maxWeights
+
+    def getTau(self, C, guess, correctLabels, datum):
+        sub = guess - correctLabels
+        nominator = sub * datum + 1
+        denominator = datum * datum * 2
+        return min(C, 1.0 * nominator / denominator)
+
+    def getAccuracy(self, weights, validationData, validationLabels):
+        count = 0.0
+        for i in range(len(validationData)):
+            datum = validationData[i]
+            correctLabels = validationLabels[i]
+            maxScore, guess = max([(datum * weights[label], label) for label in self.legalLabels])
+            if guess == correctLabels:
+                count += 1
+        return count / len(validationData)
+
 
     def classify(self, data ):
         """
