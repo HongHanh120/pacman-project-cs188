@@ -85,7 +85,7 @@ def enhancedFeatureExtractorDigit(datum):
             features[("vertical", x, y)] = int(datum.getPixel(x, y) >
                                                datum.getPixel(x, y - 1))
 
-    def getNeighbors(x,y):
+    def getNeighbors(x, y):
         neighbors = []
         if x > 0:
             neighbors.append((x - 1, y))
@@ -177,13 +177,12 @@ def enhancedPacmanFeatures(state, action):
     for ghost in successor.getGhostStates():
         ghostList.append(util.manhattanDistance(ghost.getPosition(), pacmanPosition))
 
-    # print ghostList
-
     capsuleDistance = float('inf')
     for capsule in currentCapsules:
         capsuleDistance = min(capsuleDistance, util.manhattanDistance(pacmanPosition, capsule))
 
     features['food'] = minDistance
+
     if action == 'Stop':
         features['Stop'] = 1
     else:
@@ -198,7 +197,7 @@ def contestFeatureExtractorDigit(datum):
     """
     Specify features to use for the minicontest
     """
-    features =  basicFeatureExtractorDigit(datum)
+    features = basicFeatureExtractorDigit(datum)
     return features
 
 def enhancedFeatureExtractorFace(datum):
@@ -206,7 +205,7 @@ def enhancedFeatureExtractorFace(datum):
     Your feature extraction playground for faces.
     It is your choice to modify this.
     """
-    features =  basicFeatureExtractorFace(datum)
+    features = basicFeatureExtractorFace(datum)
     return features
 
 def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage):
